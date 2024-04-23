@@ -134,7 +134,12 @@ def quiz():
 def result():
     # Pie chart for area-wise incorrect answers
     plt.figure(figsize=(10, 5))
-    plt.pie(incorrect_answers, labels=areas, autopct='%1.1f%%', startangle=90)
+    
+    # Filter out areas with 0 incorrect answers
+    filtered_areas = [area for area, count in zip(areas, incorrect_answers) if count != 0]
+    filtered_incorrect_answers = [count for count in incorrect_answers if count != 0]
+    
+    plt.pie(filtered_incorrect_answers, labels=filtered_areas, autopct=lambda pct: f"{pct:.0f}%" if pct > 0 else "", startangle=90)
     plt.title('Area-wise Incorrect Answers')
     plt.axis('equal')  # Ensures the pie chart is drawn as a circle
 
@@ -148,7 +153,15 @@ def result():
     plt.figure(figsize=(5, 5))
     total_correct = sum(correct_answers)
     total_incorrect = sum(incorrect_answers)
-    plt.pie([total_correct, total_incorrect], labels=['Correct', 'Incorrect'], autopct='%1.1f%%', startangle=90)
+    total_questions = total_correct + total_incorrect
+    
+    if total_questions > 0:
+        correct_percentage = (total_correct / total_questions) * 100
+        incorrect_percentage = (total_incorrect / total_questions) * 100
+        plt.pie([correct_percentage, incorrect_percentage], labels=['Correct', 'Incorrect'], autopct='%1.1f%%', startangle=90)
+    else:
+        plt.pie([1], labels=['No Data'], autopct='')
+        
     plt.title('Overall Performance')
     plt.axis('equal')  # Ensures the pie chart is drawn as a circle
 

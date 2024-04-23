@@ -23,7 +23,8 @@ def link_results():
     site_url = request.form['site_url']
     site_functionality = request.form['site_functionality']
     # Call your function to generate alternate links
-    links = generate_links(site_url, site_functionality)
+    #links = generate_links(site_url, site_functionality)
+    links=["www.fb.com"]
     label = "Alternate links for {} ({})".format(site_url, site_functionality)
     return render_template('link_results.html', links=links, label=label)
 
@@ -37,3 +38,7 @@ def quiz():
 def submit_answer():
     # Handle the submitted answer
     pass
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

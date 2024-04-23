@@ -1,8 +1,7 @@
 from flask import Flask, render_template, request
 import google.generativeai as genai
 import os
-from link_match import extract_links
-from feature_extract import pred
+from feature_extract import pred,extract_links
 model = genai.GenerativeModel('gemini-pro')
 
 my_api_key_gemini = 'AIzaSyAmulpvGbEpbEISbq_VwhpqZYUfs2pHq8k'

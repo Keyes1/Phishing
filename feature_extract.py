@@ -10,6 +10,14 @@ import joblib
 from pandas import DataFrame
 import numpy as np
 
+import re
+def extract_links(text):
+  url_pattern = r"www\.[^\s]+"
+  links = re.findall(url_pattern, text)
+  return (links)
+
+
+
 # 1.Domain of the URL (Domain) 
 def getDomain(url):  
     domain = urlparse(url).netloc

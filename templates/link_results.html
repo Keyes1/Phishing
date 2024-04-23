@@ -4,11 +4,13 @@
     <title>Link Results</title>
 </head>
 <body>
-    <h1>Alternate Links</h1>
+    <h1>{{ prediction }}</h1>
+    <h3>Alternate Links</h3>
+
     <p>{{ label }}</p>
     <ol>
         {% for link in links %}
-        <li>{{ link }}</li>
+        <a href="https://{{ link }}">{{ link }}</a> <br>
         {% endfor %}
     </ol>
 </body>

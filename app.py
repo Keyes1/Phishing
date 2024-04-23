@@ -15,24 +15,6 @@ total_questions=0
 my_api_key_gemini = 'AIzaSyAmulpvGbEpbEISbq_VwhpqZYUfs2pHq8k'
 model = genai.GenerativeModel('gemini-pro')
 genai.configure(api_key=my_api_key_gemini)
-'''
-def  recommendation():
-    user_url = request.form.get("url")
-    user_need = request.form.get("need")
-    prediction=pred(user_url)
-    try:
-        query = "Give me alternate websites to use for "+user_need+" in the format of www.domain_name.com"
-        response = model.generate_content(query)
-        links=extract_links(response.text)
-        links.insert(0,prediction)
-        if response.text:
-            return render_template("response.html", output=links)
-        else:
-            return render_template("response.html", output="Sorry, but we didn't get an answer to that!")
-    except Exception as e:
-        return render_template("response.html", output="Sorry, but we didn't get an answer to that!")
-'''
-
 
 app = Flask(__name__)
 
@@ -54,45 +36,10 @@ def link_results():
         query = "Give me alternate websites to use for "+site_functionality+" in the format of www.domain_name.com"
         response = model.generate_content(query)
         links=extract_links(response.text)
-        links.insert(0,prediction)
     except Exception as e:
         links=["Sorry Sar Kitiyilla"]
     label = "Alternate links for {} ({})".format(site_url, site_functionality)
-    return render_template('link_results.html', links=links, label=label)
-
-# Define the cybersecurity areas and their priorities
-areas = ["Network Security", "Encryption", "Web Security", "Malware Analysis"]
-priorities = [0, 0, 0, 0]
-# Define beginner-level questions and answers for each area
-beginner_questions = {
-    "Network Security": [
-        {"question": "What is a firewall used for?", "options": ["A. To control incoming and outgoing network traffic", "B. To monitor keyboard inputs", "C. To play games"], "answer": 1},
-        {"question": "What does HTTPS stand for?", "options": ["A. HyperText Transfer Protocol Secure", "B. HyperText Transfer Protocol Standard", "C. HyperText Secure Protocol"], "answer": 1},
-        {"question": "What is a router?", "options": ["A. A device that forwards data packets between computer networks", "B. A device for printing documents", "C. A type of keyboard"], "answer": 1}
-    ],
-    "Encryption": [
-        {"question": "What is RSA encryption?", "options": ["A. Asymmetric encryption algorithm", "B. Random symmetric algorithm", "C. Fast encryption method"], "answer": 1},
-        {"question": "What is symmetric encryption?", "options": ["A. Encryption using different keys", "B. Encryption using a single key", "C. No encryption"], "answer": 2},
-        {"question": "What is a key length in encryption?", "options": ["A. Length of the message", "B. Length of the password", "C. Number of bits in a key"], "answer": 3}
-    ],
-    "Web Security": [
-        {"question": "What is Cross-Site Scripting (XSS)?", "options": ["A. Injection attack where malicious scripts are injected into websites", "B. Attack on a physical cross-site", "C. Secure authentication protocol"], "answer": 1},
-        {"question": "What is phishing?", "options": ["A. A fraudulent attempt to obtain sensitive information by disguising as a trustworthy entity", "B. Fishing in the sea", "C. A technique to catch malware"], "answer": 1},
-        {"question": "What is malware?", "options": ["A. Malicious software designed to harm or exploit computers", "B. A type of hardware component", "C. A software to secure networks"], "answer": 1}
-    ],
-    "Malware Analysis": [
-        {"question": "What is a virus?", "options": ["A. Malicious software that replicates itself", "B. A good software", "C. A hardware component"], "answer": 1},
-        {"question": "What is a trojan?", "options": ["A. Malware disguised as legitimate software", "B. Software that cleans viruses", "C. A type of horse"], "answer": 1},
-        {"question": "What is ransomware?", "options": ["A. Malicious software that encrypts files and demands payment for decryption", "B. A security software", "C. A type of hardware"], "answer": 1}
-    ]
-}
-
-# Lists to keep track of used questions for each area
-used_questions = {area: [] for area in areas}
-
-# Lists to keep track of correct and incorrect answers for each area
-correct_answers = [0, 0, 0, 0]
-incorrect_answers = [0, 0, 0, 0]
+    return render_template('link_results.html', links=links, label=label, prediction=prediction)
 
 # Define the cybersecurity areas and their priorities
 areas = ["Network Security", "Encryption", "Web Security", "Malware Analysis"]
@@ -207,7 +154,7 @@ def result():
     plt.pie([total_correct, total_incorrect], labels=['Correct', 'Incorrect'], autopct='%1.1f%%', startangle=140)
     plt.title('Overall Performance')
     plt.axis('equal')
-
+    
     # Save the pie chart as a PNG image
     overall_pie = io.BytesIO()
     plt.savefig(overall_pie, format='png')

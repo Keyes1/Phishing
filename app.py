@@ -109,11 +109,11 @@ def quiz():
 
         # Move to the next question
         total_questions += 1
-        if total_questions < 10:
+        if total_questions < 8:
             return redirect(url_for('quiz'))
         else:
             # Render the result page with pie charts
-            return redirect(url_for('/result'))
+            return redirect(url_for('result'))
 
     # Choose a random area based on priorities
     chosen_area = random.choices(areas, weights=[1 + priorities[i] for i in range(len(areas))])[0]
@@ -121,11 +121,8 @@ def quiz():
     # Select a question from the chosen area that hasn't been used before
     remaining_questions = [question for question in beginner_questions[chosen_area] if question not in used_questions[chosen_area]]
     if remaining_questions:
-        print(1)
         question_obj = random.choice(remaining_questions)
         used_questions[chosen_area].append(question_obj)
-    else:
-        return redirect(url_for('result'))
 
     question = question_obj["question"]
     options = display_options(question_obj["options"])
@@ -137,13 +134,13 @@ def quiz():
 def result():
     # Pie chart for area-wise incorrect answers
     plt.figure(figsize=(10, 5))
-    plt.pie(incorrect_answers, labels=areas, autopct='%1.1f%%', startangle=140)
+    plt.pie(incorrect_answers, labels=areas, autopct='%1.1f%%', startangle=90)
     plt.title('Area-wise Incorrect Answers')
-    plt.axis('equal')
+    plt.axis('equal')  # Ensures the pie chart is drawn as a circle
 
     # Save the pie chart as a PNG image
     area_wise_pie = io.BytesIO()
-    plt.savefig(area_wise_pie, format='png')
+    plt.savefig(area_wise_pie, format='png', bbox_inches='tight')
     area_wise_pie.seek(0)
     area_wise_pie_url = base64.b64encode(area_wise_pie.getvalue()).decode('utf-8')
 
@@ -151,13 +148,13 @@ def result():
     plt.figure(figsize=(5, 5))
     total_correct = sum(correct_answers)
     total_incorrect = sum(incorrect_answers)
-    plt.pie([total_correct, total_incorrect], labels=['Correct', 'Incorrect'], autopct='%1.1f%%', startangle=140)
+    plt.pie([total_correct, total_incorrect], labels=['Correct', 'Incorrect'], autopct='%1.1f%%', startangle=90)
     plt.title('Overall Performance')
-    plt.axis('equal')
-    
+    plt.axis('equal')  # Ensures the pie chart is drawn as a circle
+
     # Save the pie chart as a PNG image
     overall_pie = io.BytesIO()
-    plt.savefig(overall_pie, format='png')
+    plt.savefig(overall_pie, format='png', bbox_inches='tight')
     overall_pie.seek(0)
     overall_pie_url = base64.b64encode(overall_pie.getvalue()).decode('utf-8')
 

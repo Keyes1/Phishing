@@ -11,6 +11,7 @@ import random
 
 
 total_questions=0
+Jyu=0
 
 my_api_key_gemini = 'AIzaSyAmulpvGbEpbEISbq_VwhpqZYUfs2pHq8k'
 model = genai.GenerativeModel('gemini-pro')
@@ -94,15 +95,18 @@ def display_options(options):
 # Route for the quiz page
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    global total_questions, used_questions, correct_answers, incorrect_answers, priorities, question_obj, chosen_area
+    global total_questions, used_questions, correct_answers, incorrect_answers, priorities, question_obj, chosen_area, Jyu
 
     if request.method == 'POST':
         # Get the user's answer from the form
         user_answer = request.form['answer']
 
         # Check if the answer is correct
-        if user_answer == question_obj["answer"].lower():
+        print("User_Answer = ",user_answer," The real answer - ",question_obj["answer"].upper())
+        if user_answer == question_obj["answer"].upper():
             correct_answers[areas.index(chosen_area)] += 1
+            Jyu+=1
+            print("Correct answer+1\n")
         else:
             incorrect_answers[areas.index(chosen_area)] += 1
             priorities[areas.index(chosen_area)] += 1
@@ -132,12 +136,14 @@ def quiz():
 # Route for the result page
 @app.route('/result', methods=['GET'])
 def result():
+    global total_questions, Jyu
     # Pie chart for area-wise incorrect answers
     plt.figure(figsize=(10, 5))
     
     # Filter out areas with 0 incorrect answers
     filtered_areas = [area for area, count in zip(areas, incorrect_answers) if count != 0]
     filtered_incorrect_answers = [count for count in incorrect_answers if count != 0]
+    print(filtered_incorrect_answers)
     
     plt.pie(filtered_incorrect_answers, labels=filtered_areas, autopct=lambda pct: f"{pct:.0f}%" if pct > 0 else "", startangle=90)
     plt.title('Area-wise Incorrect Answers')
@@ -151,13 +157,13 @@ def result():
 
     # Pie chart for overall performance
     plt.figure(figsize=(5, 5))
-    total_correct = sum(correct_answers)
-    total_incorrect = sum(incorrect_answers)
-    total_questions = total_correct + total_incorrect
-    
+    total_incorrect = sum(filtered_incorrect_answers)
+    print(Jyu)
+
+
     if total_questions > 0:
-        correct_percentage = (total_correct / total_questions) * 100
-        incorrect_percentage = (total_incorrect / total_questions) * 100
+        correct_percentage = (Jyu / total_questions) * 100
+        incorrect_percentage = 100 - correct_percentage
         plt.pie([correct_percentage, incorrect_percentage], labels=['Correct', 'Incorrect'], autopct='%1.1f%%', startangle=90)
     else:
         plt.pie([1], labels=['No Data'], autopct='')

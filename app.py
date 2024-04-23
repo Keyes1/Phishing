@@ -95,7 +95,7 @@ def display_options(options):
 # Route for the quiz page
 @app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    global total_questions, used_questions, correct_answers, incorrect_answers, priorities, question_obj, chosen_area, Jyu
+    global total_questions, correct_answers, incorrect_answers, priorities, question_obj, chosen_area, Jyu
 
     if request.method == 'POST':
         # Get the user's answer from the form
@@ -104,7 +104,7 @@ def quiz():
         # Check if the answer is correct
         if user_answer == question_obj["answer"].upper():
             correct_answers[areas.index(chosen_area)] += 1
-            Jyu+=1
+            Jyu += 1
         else:
             incorrect_answers[areas.index(chosen_area)] += 1
             priorities[areas.index(chosen_area)] += 1
@@ -121,15 +121,16 @@ def quiz():
     chosen_area = random.choices(areas, weights=[1 + priorities[i] for i in range(len(areas))])[0]
 
     # Select a question from the chosen area that hasn't been used before
-    remaining_questions = [question for question in beginner_questions[chosen_area] if question not in used_questions[chosen_area]]
-    if remaining_questions:
-        question_obj = random.choice(remaining_questions)
-        used_questions[chosen_area].append(question_obj)
+    remaining_questions = beginner_questions[chosen_area]
 
+    if len(remaining_questions)>0:
+        question_obj = random.choice(remaining_questions)
+        beginner_questions[chosen_area].remove(question_obj)
     question = question_obj["question"]
     options = display_options(question_obj["options"])
 
     return render_template('quiz.html', question=question, options=options)
+
 
 # Route for the result page
 @app.route('/result', methods=['GET'])
@@ -180,3 +181,4 @@ def result():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    print()

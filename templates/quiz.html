@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cybersecurity Quiz</title>
+</head>
+<body>
+    <h1>Cybersecurity Quiz</h1>
+    <form method="post" action="{{ url_for('submit_answer') }}">
+        <p>{{ question }}</p>
+        {% for option in options %}
+        <div>
+            <input type="radio" id="{{ option }}" name="answer" value="{{ option }}">
+            <label for="{{ option }}">{{ option }}</label>
+        </div>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Link Results</title>
+</head>
+<body>
+    <h1>Alternate Links</h1>
+    <p>{{ label }}</p>
+    <ol>
+        {% for link in links %}
+        <li>{{ link }}</li>
+        {% endfor %}
+    </ol>
+</body>
+</html>

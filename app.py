@@ -102,11 +102,9 @@ def quiz():
         user_answer = request.form['answer']
 
         # Check if the answer is correct
-        print("User_Answer = ",user_answer," The real answer - ",question_obj["answer"].upper())
         if user_answer == question_obj["answer"].upper():
             correct_answers[areas.index(chosen_area)] += 1
             Jyu+=1
-            print("Correct answer+1\n")
         else:
             incorrect_answers[areas.index(chosen_area)] += 1
             priorities[areas.index(chosen_area)] += 1
@@ -143,7 +141,6 @@ def result():
     # Filter out areas with 0 incorrect answers
     filtered_areas = [area for area, count in zip(areas, incorrect_answers) if count != 0]
     filtered_incorrect_answers = [count for count in incorrect_answers if count != 0]
-    print(filtered_incorrect_answers)
     
     plt.pie(filtered_incorrect_answers, labels=filtered_areas, autopct=lambda pct: f"{pct:.0f}%" if pct > 0 else "", startangle=90)
     plt.title('Area-wise Incorrect Answers')
@@ -158,7 +155,6 @@ def result():
     # Pie chart for overall performance
     plt.figure(figsize=(5, 5))
     total_incorrect = sum(filtered_incorrect_answers)
-    print(Jyu)
 
 
     if total_questions > 0:

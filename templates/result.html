@@ -1,0 +1,22 @@
+<!-- result.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Results</title>
+</head>
+<body>
+    <h1>Quiz Results</h1>
+
+    <h2>Area Descriptions:</h2>
+    {% for area, description in area_descriptions.items() %}
+    <h3>{{ area }}</h3>
+    <p>{{ description }}</p>
+    {% endfor %}
+
+    <h2>Area-wise Incorrect Answers:</h2>
+    <img src="data:image/png;base64,{{ area_wise_pie_url }}">
+
+    <h2>Overall Performance:</h2>
+    <img src="data:image/png;base64,{{ overall_pie_url }}">
+</body>
+</html>

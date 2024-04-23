@@ -1,11 +1,19 @@
-from flask import Flask, render_template, request
 import google.generativeai as genai
 import os
 from feature_extract import pred,extract_links
-model = genai.GenerativeModel('gemini-pro')
+from flask import Flask, render_template, request, redirect, url_for
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import io
+import base64
+import random
+
+
+total_questions=0
 
 my_api_key_gemini = 'AIzaSyAmulpvGbEpbEISbq_VwhpqZYUfs2pHq8k'
-
+model = genai.GenerativeModel('gemini-pro')
 genai.configure(api_key=my_api_key_gemini)
 '''
 def  recommendation():
@@ -52,17 +60,164 @@ def link_results():
     label = "Alternate links for {} ({})".format(site_url, site_functionality)
     return render_template('link_results.html', links=links, label=label)
 
-@app.route('/quiz')
+# Define the cybersecurity areas and their priorities
+areas = ["Network Security", "Encryption", "Web Security", "Malware Analysis"]
+priorities = [0, 0, 0, 0]
+# Define beginner-level questions and answers for each area
+beginner_questions = {
+    "Network Security": [
+        {"question": "What is a firewall used for?", "options": ["A. To control incoming and outgoing network traffic", "B. To monitor keyboard inputs", "C. To play games"], "answer": 1},
+        {"question": "What does HTTPS stand for?", "options": ["A. HyperText Transfer Protocol Secure", "B. HyperText Transfer Protocol Standard", "C. HyperText Secure Protocol"], "answer": 1},
+        {"question": "What is a router?", "options": ["A. A device that forwards data packets between computer networks", "B. A device for printing documents", "C. A type of keyboard"], "answer": 1}
+    ],
+    "Encryption": [
+        {"question": "What is RSA encryption?", "options": ["A. Asymmetric encryption algorithm", "B. Random symmetric algorithm", "C. Fast encryption method"], "answer": 1},
+        {"question": "What is symmetric encryption?", "options": ["A. Encryption using different keys", "B. Encryption using a single key", "C. No encryption"], "answer": 2},
+        {"question": "What is a key length in encryption?", "options": ["A. Length of the message", "B. Length of the password", "C. Number of bits in a key"], "answer": 3}
+    ],
+    "Web Security": [
+        {"question": "What is Cross-Site Scripting (XSS)?", "options": ["A. Injection attack where malicious scripts are injected into websites", "B. Attack on a physical cross-site", "C. Secure authentication protocol"], "answer": 1},
+        {"question": "What is phishing?", "options": ["A. A fraudulent attempt to obtain sensitive information by disguising as a trustworthy entity", "B. Fishing in the sea", "C. A technique to catch malware"], "answer": 1},
+        {"question": "What is malware?", "options": ["A. Malicious software designed to harm or exploit computers", "B. A type of hardware component", "C. A software to secure networks"], "answer": 1}
+    ],
+    "Malware Analysis": [
+        {"question": "What is a virus?", "options": ["A. Malicious software that replicates itself", "B. A good software", "C. A hardware component"], "answer": 1},
+        {"question": "What is a trojan?", "options": ["A. Malware disguised as legitimate software", "B. Software that cleans viruses", "C. A type of horse"], "answer": 1},
+        {"question": "What is ransomware?", "options": ["A. Malicious software that encrypts files and demands payment for decryption", "B. A security software", "C. A type of hardware"], "answer": 1}
+    ]
+}
+
+# Lists to keep track of used questions for each area
+used_questions = {area: [] for area in areas}
+
+# Lists to keep track of correct and incorrect answers for each area
+correct_answers = [0, 0, 0, 0]
+incorrect_answers = [0, 0, 0, 0]
+
+# Define the cybersecurity areas and their priorities
+areas = ["Network Security", "Encryption", "Web Security", "Malware Analysis"]
+priorities = [0, 0, 0, 0]
+
+# Define beginner-level questions and answers for each area
+beginner_questions = {
+    "Network Security": [
+        {"question": "What is a firewall used for?", "options": ["A. To control incoming and outgoing network traffic", "B. To monitor keyboard inputs", "C. To play games"], "answer": "A"},
+        {"question": "What does HTTPS stand for?", "options": ["A. HyperText Transfer Protocol Secure", "B. HyperText Transfer Protocol Standard", "C. HyperText Secure Protocol"], "answer": "A"},
+        {"question": "What is a router?", "options": ["A. A device that forwards data packets between computer networks", "B. A device for printing documents", "C. A type of keyboard"], "answer": "A"}
+    ],
+    "Encryption": [
+        {"question": "What is RSA encryption?", "options": ["A. Asymmetric encryption algorithm", "B. Random symmetric algorithm", "C. Fast encryption method"], "answer": "A"},
+        {"question": "What is symmetric encryption?", "options": ["A. Encryption using different keys", "B. Encryption using a single key", "C. No encryption"], "answer": "B"},
+        {"question": "What is a key length in encryption?", "options": ["A. Length of the message", "B. Length of the password", "C. Number of bits in a key"], "answer": "C"}
+    ],
+    "Web Security": [
+        {"question": "What is Cross-Site Scripting (XSS)?", "options": ["A. Injection attack where malicious scripts are injected into websites", "B. Attack on a physical cross-site", "C. Secure authentication protocol"], "answer": "A"},
+        {"question": "What is phishing?", "options": ["A. A fraudulent attempt to obtain sensitive information by disguising as a trustworthy entity", "B. Fishing in the sea", "C. A technique to catch malware"], "answer": "A"},
+        {"question": "What is malware?", "options": ["A. Malicious software designed to harm or exploit computers", "B. A type of hardware component", "C. A software to secure networks"], "answer": "A"}
+    ],
+    "Malware Analysis": [
+        {"question": "What is a virus?", "options": ["A. Malicious software that replicates itself", "B. A good software", "C. A hardware component"], "answer": "A"},
+        {"question": "What is a trojan?", "options": ["A. Malware disguised as legitimate software", "B. Software that cleans viruses", "C. A type of horse"], "answer": "A"},
+        {"question": "What is ransomware?", "options": ["A. Malicious software that encrypts files and demands payment for decryption", "B. A security software", "C. A type of hardware"], "answer": "A"}
+    ]
+}
+
+# Brief descriptions of each area
+area_descriptions = {
+    "Network Security": "Network security involves protecting computer networks from unauthorized access or misuse.",
+    "Encryption": "Encryption is the process of converting data into a form that cannot be easily understood by unauthorized people.",
+    "Web Security": "Web security focuses on protecting websites and web applications from various types of cyber threats.",
+    "Malware Analysis": "Malware analysis involves studying, identifying, and understanding the behavior of malicious software."
+}
+
+# Lists to keep track of used questions for each area
+used_questions = {area: [] for area in areas}
+
+# Lists to keep track of correct and incorrect answers for each area
+correct_answers = [0, 0, 0, 0]
+incorrect_answers = [0, 0, 0, 0]
+
+# Function to display options for the question
+def display_options(options):
+    option_list = []
+    for option in options:
+        option_list.append(option)
+    return option_list
+
+# Route for the quiz page
+@app.route('/quiz', methods=['GET', 'POST'])
 def quiz():
-    question = "What is the capital of France?"
-    options = ["Paris", "London", "Berlin", "Madrid"]
+    global total_questions, used_questions, correct_answers, incorrect_answers, priorities, question_obj, chosen_area
+
+    if request.method == 'POST':
+        # Get the user's answer from the form
+        user_answer = request.form['answer']
+
+        # Check if the answer is correct
+        if user_answer == question_obj["answer"].lower():
+            correct_answers[areas.index(chosen_area)] += 1
+        else:
+            incorrect_answers[areas.index(chosen_area)] += 1
+            priorities[areas.index(chosen_area)] += 1
+
+        # Move to the next question
+        total_questions += 1
+        if total_questions < 10:
+            return redirect(url_for('quiz'))
+        else:
+            # Render the result page with pie charts
+            return redirect(url_for('/result'))
+
+    # Choose a random area based on priorities
+    chosen_area = random.choices(areas, weights=[1 + priorities[i] for i in range(len(areas))])[0]
+
+    # Select a question from the chosen area that hasn't been used before
+    remaining_questions = [question for question in beginner_questions[chosen_area] if question not in used_questions[chosen_area]]
+    if remaining_questions:
+        print(1)
+        question_obj = random.choice(remaining_questions)
+        used_questions[chosen_area].append(question_obj)
+    else:
+        return redirect(url_for('result'))
+
+    question = question_obj["question"]
+    options = display_options(question_obj["options"])
+
     return render_template('quiz.html', question=question, options=options)
 
-@app.route('/submit_answer', methods=['POST'])
-def submit_answer():
-    # Handle the submitted answer
-    pass
+# Route for the result page
+@app.route('/result', methods=['GET'])
+def result():
+    # Pie chart for area-wise incorrect answers
+    plt.figure(figsize=(10, 5))
+    plt.pie(incorrect_answers, labels=areas, autopct='%1.1f%%', startangle=140)
+    plt.title('Area-wise Incorrect Answers')
+    plt.axis('equal')
 
+    # Save the pie chart as a PNG image
+    area_wise_pie = io.BytesIO()
+    plt.savefig(area_wise_pie, format='png')
+    area_wise_pie.seek(0)
+    area_wise_pie_url = base64.b64encode(area_wise_pie.getvalue()).decode('utf-8')
+
+    # Pie chart for overall performance
+    plt.figure(figsize=(5, 5))
+    total_correct = sum(correct_answers)
+    total_incorrect = sum(incorrect_answers)
+    plt.pie([total_correct, total_incorrect], labels=['Correct', 'Incorrect'], autopct='%1.1f%%', startangle=140)
+    plt.title('Overall Performance')
+    plt.axis('equal')
+
+    # Save the pie chart as a PNG image
+    overall_pie = io.BytesIO()
+    plt.savefig(overall_pie, format='png')
+    overall_pie.seek(0)
+    overall_pie_url = base64.b64encode(overall_pie.getvalue()).decode('utf-8')
+
+    # Close the figures to free up memory
+    plt.close('all')
+
+    return render_template('result.html', area_descriptions=area_descriptions, area_wise_pie_url=area_wise_pie_url, overall_pie_url=overall_pie_url)
 
 if __name__ == '__main__':
     app.run(debug=True)

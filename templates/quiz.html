@@ -1,3 +1,4 @@
+<!-- quiz.html -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,12 +6,12 @@
 </head>
 <body>
     <h1>Cybersecurity Quiz</h1>
-    <form method="post" action="{{ url_for('submit_answer') }}">
+    <form method="post">
         <p>{{ question }}</p>
         {% for option in options %}
         <div>
-            <input type="radio" id="{{ option }}" name="answer" value="{{ option }}">
-            <label for="{{ option }}">{{ option }}</label>
+            <input type="radio" name="answer" value="{{ option.split('.')[0] }}">
+            <label>{{ option }}</label>
         </div>
         {% endfor %}
         <button type="submit">Submit</button>
